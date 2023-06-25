@@ -3,27 +3,37 @@ import unittest
 import pandas as pd
 import numpy as np
 
-from workers.task_management.compute_average import ComputeMeanPayload, ComputeMeanTask
+from task_management.tasks.compute_average import ComputeMeanPayload, ComputeMeanTask
 
 
 class TestComputeMeanTask(unittest.TestCase):
     def setUp(self):
         # Create some test CSV files
-        self.file_paths = ['test1.csv', 'test2.csv']
-        self.result_file_path = 'result.csv'
-        self.lock_file_path = f"{self.result_file_path}.lock"
+        self.file_paths = ["test1.csv", "test2.csv"]
+        self.result_file_path = "result.csv"
+        self.lock_file_path = f"{self.result_file_path}.task001.lock"
+        self.intermediate_results_file_path = f"{self.result_file_path}.task001.intermediate.csv"
 
-        pd.DataFrame(np.array([[1, 2, 3, 4]])).T.to_csv(self.file_paths[0], index=False, header=False)
-        pd.DataFrame(np.array([[2, 3, 4, 5]])).T.to_csv(self.file_paths[1], index=False, header=False)
+        pd.DataFrame(np.array([[1, 2, 3, 4]])).T.to_csv(
+            self.file_paths[0], index=False, header=False
+        )
+        pd.DataFrame(np.array([[2, 3, 4, 5]])).T.to_csv(
+            self.file_paths[1], index=False, header=False
+        )
 
     def tearDown(self):
         # Remove the test CSV files
-        for file in self.file_paths + [self.result_file_path, self.lock_file_path]:
+        for file in self.file_paths + [self.result_file_path, self.lock_file_path, self.intermediate_results_file_path]:
             if os.path.exists(file):
                 os.remove(file)
 
     def test_compute_mean_task(self):
-        payload = ComputeMeanPayload(self.file_paths, self.result_file_path)
+        payload = ComputeMeanPayload(
+            task_id="task001",
+            subtask_id="subtask_001",
+            file_paths=self.file_paths,
+            result_file=self.result_file_path,
+        )
         task = ComputeMeanTask(payload)
         task.process()
 

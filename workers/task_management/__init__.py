@@ -1,0 +1,2 @@
+from task_management.tasks.compute_average import ComputeMeanTask
+from task_management.tasks.compute_sum import ComputeSumTask

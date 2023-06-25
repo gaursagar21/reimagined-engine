@@ -6,7 +6,7 @@ const options = {
     info: {
       title: 'Task API with Swagger',
       version: '1.0.0',
-      description: 'A simple API to manage tasks',
+      description: 'DFL Worker Management API',
     },
     servers: [
       {
@@ -14,7 +14,7 @@ const options = {
       },
     ],
   },
-  apis: ['src/api.ts'], // files containing annotations as above
+  apis: ['src/api.ts'],
 };
 
 const specs = swaggerJsdoc(options);

@@ -1,10 +1,10 @@
-import logging
 from time import sleep
 from typing import Any
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
 import json
 
+from constants import WorkerConstants
 from logging_config import logger
 from task_management.tasks_factory import TasksFactory
 import redis
@@ -30,7 +30,8 @@ def process_subtask(subtask_string):
 
 def worker():
     while True:
-        _, subtask_string = r.brpop("subtasks_queue", 0)
+        _, subtask_string = r.brpop(WorkerConstants.SUBTASKS_QUEUE, 0)
+        logger.debug("popped message", subtask_string)
         process_subtask(subtask_string)
         sleep(0.5)
 

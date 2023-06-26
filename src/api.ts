@@ -1,20 +1,15 @@
 import swaggerUi from 'swagger-ui-express';
 import specs from './swaggerOptions';
 import express, { Request, Response } from 'express';
-import { MongoClient } from 'mongodb';
-import { WorkerManager } from './workerManager';
-import { createTask, } from './apiHandler';
+// import { MongoClient } from 'mongodb';
+import { createTask, spawnWorkersHandler, killWorkersHandler } from './apiHandler';
 
 const app = express();
 app.use(express.json());
 
-const dbUri = 'mongodb://localhost:27017';
-const client = new MongoClient(dbUri);
+// const dbUri = 'mongodb://localhost:27017';
+// const client = new MongoClient(dbUri);
 
-
-const workerScriptPath = './workers/worker.py';
-const workerArgs = [""];
-const workerManager = new WorkerManager(workerScriptPath, workerArgs);
 
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
@@ -44,10 +39,12 @@ app.post('/spawn-workers', (req: Request, res: Response) => {
         return res.status(400).json({ message: 'Invalid worker count. Must be a positive integer.' });
     }
 
-    workerManager.spawnWorkers(W);
-    const msg = `Spawned ${W} workers.`
-    console.log(msg)
-    res.status(200).json({ message: msg });
+    try {
+        spawnWorkersHandler(W);
+        res.status(201).json({ message: `Spawned ${W} workers` });
+    } catch (error) {
+        res.status(500).json({ error: 'An error occurred while spawning workers' });
+    }
 });
 
 /**
@@ -60,9 +57,12 @@ app.post('/spawn-workers', (req: Request, res: Response) => {
  *         description: The worker was successfully spawned
  */
 app.delete('/kill-workers', (req: Request, res: Response) => {
-
-    const count = workerManager.killAllWorkers();
-    res.status(200).json({ message: `Killed ${count} workers.` });
+    try {
+        const killedCount: number = killWorkersHandler();
+        res.status(201).json({ message: `Killed ${killedCount} workers` });
+    } catch (error) {
+        res.status(500).json({ error: 'An error occurred while killing workers' });
+    }
 });
 
 
@@ -105,6 +105,8 @@ app.post('/create-task', async (req: Request, res: Response) => {
 
 const port = 3000;
 app.listen(port, async () => {
-    await client.connect();
+    // await client.connect();
     console.log(`Server running on port ${port}`);
 });
+
+

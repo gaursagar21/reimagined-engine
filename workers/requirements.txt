@@ -2,3 +2,4 @@ pandas
 pymongo
 filelock
 dataclasses_json
+redis

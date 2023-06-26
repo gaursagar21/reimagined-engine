@@ -3,7 +3,7 @@
 ## Starting the API server
 
 ```bash
-npx ts-node-dev src/api.ts 
+npx ts-node-dev src/api.ts
 ```
 It would start a server at localhost:3000. 
 API docs would be available in localhost:3000/api-docs

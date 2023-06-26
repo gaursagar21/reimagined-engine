@@ -26,7 +26,7 @@ export class WorkerManager {
      */
     spawnWorker(workerId: string): Promise<string> {
         return new Promise((resolve, reject) => {
-            const workerProcess = spawn('python3', [this.workerScriptPath, ...this.args]);
+            const workerProcess = spawn('python', [this.workerScriptPath, ...this.args]);
 
             let workerOutput = '';
             workerProcess.stdout.on('data', (data) => {
@@ -40,11 +40,7 @@ export class WorkerManager {
 
             workerProcess.on('close', (returnCode) => {
                 console.log(`Worker ${workerId} exited with return code ${returnCode}`);
-                if (returnCode !== 0) {
-                    reject(new Error(`Worker ${workerId} exited with return code ${returnCode}`));
-                } else {
-                    resolve(workerOutput);
-                }
+                resolve(workerOutput);
             });
 
             workerProcess.on('error', (err) => {

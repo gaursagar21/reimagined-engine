@@ -2,8 +2,8 @@ import swaggerUi from 'swagger-ui-express';
 import specs from './swaggerOptions';
 import express, { Request, Response } from 'express';
 import { MongoClient } from 'mongodb';
-import { v4 as uuidv4 } from 'uuid';
 import { WorkerManager } from './workerManager';
+import { createTask, } from './apiHandler';
 
 const app = express();
 app.use(express.json());
@@ -88,21 +88,18 @@ app.delete('/kill-workers', (req: Request, res: Response) => {
  */
 app.post('/create-task', async (req: Request, res: Response) => {
     const { C, F } = req.body;
-    // Split the task into subtasks when F > 5
-    const subtasks: string[][] = [];
-    for (let i = 0; i < F; i += 5) {
-        const subtaskFiles : string[] = [];
-        for (let j = i; j < i + 5 && j < F; j++) {
-            const filename = `file_${uuidv4()}.csv`;
-            // Generate a file with C random numbers
-            // saveFile(filename, C);
-            subtaskFiles.push(filename);
-        }
-        subtasks.push(subtaskFiles);
+
+    // Validation
+    if (!Number.isInteger(C) || !Number.isInteger(F) || C <= 0 || F <= 0) {
+        return res.status(400).json({ error: 'Invalid input' });
     }
-    const db = client.db('task_db');
-    const result = await db.collection('tasks').insertOne({ C, F, subtasks, status: 'QUEUED', createdOn: Date.now(), updatedOn: Date.now() });
-    res.status(201).send({ taskId: result.insertedId });
+
+    try {
+        await createTask(C, F);
+        res.status(201).json({ message: 'The task was successfully created' });
+    } catch (error) {
+        res.status(500).json({ error: 'An error occurred while creating the task' });
+    }
 });
 
 

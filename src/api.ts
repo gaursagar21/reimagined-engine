@@ -2,7 +2,7 @@ import swaggerUi from 'swagger-ui-express';
 import specs from './swaggerOptions';
 import express, { Request, Response } from 'express';
 // import { MongoClient } from 'mongodb';
-import { createTask, spawnWorkersHandler, killWorkersHandler } from './apiHandler';
+import { createTask, spawnWorkersHandler, killWorkersHandler, updateSubtaskState, getAllTasks, getTask } from './apiHandler';
 
 const app = express();
 app.use(express.json());
@@ -99,6 +99,90 @@ app.post('/create-task', async (req: Request, res: Response) => {
         res.status(201).json({ message: 'The task was successfully created' });
     } catch (error) {
         res.status(500).json({ error: 'An error occurred while creating the task' });
+    }
+});
+
+
+/**
+ * @swagger
+ * /update-subtask-state:
+ *   post:
+ *     summary: Updates the state of a specific subtask
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               taskId:
+ *                 type: string
+ *               subtaskId:
+ *                 type: string
+ *               newState:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: The subtask state was successfully updated
+ */
+app.post('/update-subtask-state', (req: Request, res: Response) => {
+    const { taskId, subtaskId, newState } = req.body;
+    console.log(taskId, subtaskId, newState)
+
+    try {
+        updateSubtaskState(taskId, subtaskId, newState);
+        res.status(200).json({ message: 'The subtask state was successfully updated' });
+    } catch (error) {
+        res.status(500).json({ error: 'An error occurred while updating the subtask state' });
+    }
+});
+
+/**
+ * @swagger
+ * /tasks:
+ *   get:
+ *     summary: Retrieves a list of all tasks
+ *     responses:
+ *       200:
+ *         description: A list of all tasks
+ */
+app.get('/tasks', (req: Request, res: Response) => {
+    try {
+        const tasks = getAllTasks();
+        res.status(200).json(tasks);
+    } catch (error) {
+        res.status(500).json({ error: 'An error occurred while retrieving tasks' });
+    }
+});
+
+/**
+ * @swagger
+ * /tasks/{taskId}:
+ *   get:
+ *     summary: Retrieves a specific task
+ *     parameters:
+ *      - in: path
+ *        name: taskId
+ *        schema:
+ *          type: string
+ *        required: true
+ *        description: The task id
+ *     responses:
+ *       200:
+ *         description: A specific task
+ */
+app.get('/tasks/:taskId', (req: Request, res: Response) => {
+    const { taskId } = req.params;
+
+    try {
+        const task = getTask(taskId);
+        if (task) {
+            res.status(200).json(task);
+        } else {
+            res.status(404).json({ message: 'Task not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'An error occurred while retrieving the task' });
     }
 });
 

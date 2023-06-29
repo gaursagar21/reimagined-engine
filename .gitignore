@@ -1,1 +1,8 @@
 /node_modules/
+workers/requirements.txt
+.gitignore
+*.pyc
+*.xml
+*.csv*
+*.iml
+*.lock

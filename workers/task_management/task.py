@@ -1,6 +1,9 @@
+import json
 from abc import abstractmethod, ABC
 from dataclasses import dataclass
 from typing import Any
+
+import requests as requests
 
 from logging_config import logger
 
@@ -13,6 +16,7 @@ class TaskPayload:
 
     task_id: str
     subtask_id: str
+    state: str
 
 
 class Task(ABC):
@@ -35,8 +39,19 @@ class Task(ABC):
     def save_results(self, results: Any):
         pass
 
-    def update_state(self):
+    def update_state(self, state):
         """
         Update state in DB
         """
-        pass
+        logger.info(f"Updating state of {self.subtask_id} to {state}")
+        url = "http://127.0.0.1:3000/update-subtask-state"
+        headers = {'Content-Type': 'application/json'}
+        data = {
+            "taskId": self.task_id,
+            "subtaskId": self.subtask_id,
+            "newState": state
+        }
+        response = requests.post(url, headers=headers, data=json.dumps(data))
+
+        if response.status_code != 200:
+            logger.error(f"Failed to update state. Status code: {response.status_code}. Message: {response.text}")

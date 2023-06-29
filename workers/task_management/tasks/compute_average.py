@@ -77,10 +77,16 @@ class ComputeMeanTask(Task):
     def process(self):
         try:
             logging.info(f"Started processing task: {self.task_id} subtask: {self.subtask_id}")
+            state="INPROGRESS"
+            self.update_state(state=state)
             result = self.compute_mean()
             self.save_results(result)
+            state="COMPLETED"
             logging.info(f"Finished processing task: {self.task_id} subtask: {self.subtask_id}")
         except Exception as ex:
             logging.exception(f"Error processing task: {self.task_id} subtask: {self.subtask_id} {ex}")
+            state = "FAILURE"
             raise
+        finally:
+            self.update_state(state=state)
 
